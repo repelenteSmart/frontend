@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/card";
 import { ThemeToggle } from "@/app/Components/ThemeToggle";
 import Link from "next/link";
+import { GlowingEffect } from "@/app/Components/ui/glowing-effect";
 
-// Validação de horários
 const timeSchema = z
   .object({
     startTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
@@ -64,7 +64,6 @@ export default function ViewDevice() {
     },
   });
 
-  // Atualiza só o horário da última ativação a cada 5 segundos (sem simulação de temp/umidade)
   useEffect(() => {
     const interval = setInterval(() => {
       setDeviceStatus((prev) => ({
@@ -81,7 +80,6 @@ export default function ViewDevice() {
       startTime: data.startTime,
       endTime: data.endTime,
     }));
-    console.log("Horários atualizados:", data);
   };
 
   const fetchWeather = async (lat: number, lon: number) => {
@@ -159,18 +157,17 @@ export default function ViewDevice() {
     <div className="container mx-auto p-4 space-y-6">
       <header className="flex justify-between items-center">
         <div className="flex justify-start items-center">
-            <Link href={'/'} >
-                <Image 
-                  src="/logo.svg"
-                  alt="Logo do Repelente Inteligente" 
-                  width={90}  // Defina a largura desejada
-                  height={80} // Defina a altura desejada
-                  priority    // Opcional: carrega com prioridade se for a imagem principal
-                />
-            </Link>
-            <h1 className="text-3xl font-bold flex items-center gap-2">Repelente Inteligente</h1> 
+          <Link href={"/"}>
+            <Image
+              src="/logo.png"
+              alt="Logo do Repelente Inteligente"
+              width={90}
+              height={80}
+              priority
+            />
+          </Link>
+          <h1 className="text-3xl font-bold ml-4">Repelente Inteligente</h1>
         </div>
-        
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {deviceStatus.connection ? (
@@ -181,7 +178,8 @@ export default function ViewDevice() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Status Cards */}
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatusCard
           icon={<Gauge className="text-blue-500" />}
           title="Temperatura"
@@ -208,18 +206,14 @@ export default function ViewDevice() {
           title="Modo"
           value={deviceStatus.autoMode ? "Automático" : "Manual"}
         />
-      </div>
+      </ul>
 
+      {/* Energy & Schedule Control */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center justify-start gap-3">
-                <Power
-                  className={deviceStatus.power ? "text-green-500" : "text-red-500"}
-                />
-                <span>Controle de Energia</span>
-              </div>
+              <span>Controle de Energia</span>
               <Switch
                 checked={deviceStatus.power}
                 onCheckedChange={(checked) =>
@@ -252,21 +246,20 @@ export default function ViewDevice() {
           <CardContent>
             {deviceStatus.autoMode ? (
               <p className="text-sm text-muted-foreground">
-                Modo automático ativado: {deviceStatus.startTime} -{" "}
-                {deviceStatus.endTime}
+                Modo automático: {deviceStatus.startTime} - {deviceStatus.endTime}
               </p>
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="startTime">Horário de Início</Label>
+                    <Label htmlFor="startTime">Início</Label>
                     <Input id="startTime" type="time" {...register("startTime")} />
                     {errors.startTime && (
                       <p className="text-sm text-red-500">{errors.startTime.message}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="endTime">Horário de Término</Label>
+                    <Label htmlFor="endTime">Término</Label>
                     <Input id="endTime" type="time" {...register("endTime")} />
                     {errors.endTime && (
                       <p className="text-sm text-red-500">{errors.endTime.message}</p>
@@ -281,17 +274,6 @@ export default function ViewDevice() {
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Histórico de Ativação</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-            Gráfico de histórico aparecerá aqui
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -306,15 +288,15 @@ function StatusCard({
   value: string;
 }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
+    <li className="list-none">
+      <div className="relative h-full rounded-2xl border p-4 shadow-sm dark:shadow-[0px_0px_15px_#2D2D2D]">
+        <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+        <div className="relative flex flex-col gap-3">
+          <div className="w-fit rounded-lg border p-2">{icon}</div>
+          <h3 className="text-xl font-semibold">{title}</h3>
+          <p className="text-sm text-muted-foreground">{value}</p>
+        </div>
+      </div>
+    </li>
   );
 }
- 
